@@ -17,11 +17,15 @@ Vagrant.configure("2") do |config|
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
-  config.vm.box_check_update = false
+  # config.vm.box_check_update = false
 
   # Sync time with the local host
-  config.vm.provider 'virtualbox' do |vb|
-   vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 1000 ]
+  # config.vm.provider 'virtualbox' do |vb|
+  #  vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 1000 ]
+  # end
+
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.graphics_ip = '0.0.0.0'
   end
 
   $num_instances = 3
@@ -69,14 +73,20 @@ Vagrant.configure("2") do |config|
     node.vm.network "public_network", bridge: "en0: Wi-Fi (AirPort)", auto_config: true
     #node.vm.synced_folder "/Users/DuffQiu/share", "/home/vagrant/share"
 
-    node.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-      vb.memory = "3072"
-      vb.cpus = 1
-      vb.name = "node#{i}"
+  #   node.vm.provider "virtualbox" do |vb|
+  # #   # Display the VirtualBox GUI when booting the machine
+  # #   vb.gui = true
+  # #
+  # #   # Customize the amount of memory on the VM:
+  #     vb.memory = "3072"
+  #     vb.cpus = 1
+  #     vb.name = "node#{i}"
+  #   end
+
+    node.vm.provider :libvirt do |libvirt|
+      libvirt.cpus = 1
+      libvirt.memory = 2048
+      libvirt.name = "node#{i}"
     end
 
     node.vm.provision "shell" do |s|
