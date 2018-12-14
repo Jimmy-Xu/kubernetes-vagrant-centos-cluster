@@ -31,7 +31,7 @@ Vagrant.configure("2") do |config|
   $num_instances = 3
 
   # curl https://discovery.etcd.io/new?size=3
-  $etcd_cluster = "node1=http://172.17.8.101:2380"
+  $etcd_cluster = "node1=http://192.168.122.101:2380"
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
@@ -68,9 +68,12 @@ Vagrant.configure("2") do |config|
     config.vm.define "node#{i}" do |node|
     node.vm.box = "centos/7"
     node.vm.hostname = "node#{i}"
-    ip = "172.17.8.#{i+100}"
-    node.vm.network "private_network", ip: ip
-    node.vm.network "public_network", bridge: "en0: Wi-Fi (AirPort)", auto_config: true
+    ip = "192.168.122.#{i+100}"
+    #node.vm.network "private_network", bridge:"virbr0", ip: ip
+    #node.vm.network "public_network", bridge: "virbr0", auto_config: true
+
+    config.vm.network "private_network", :dev => "virbr0", :mode => 'bridge', :type => "bridge", :ip => ip
+    config.vm.network "public_network", :dev => "virbr1", :mode => 'bridge', :type => "bridge"
     #node.vm.synced_folder "/Users/DuffQiu/share", "/home/vagrant/share"
 
   #   node.vm.provider "virtualbox" do |vb|
@@ -86,7 +89,7 @@ Vagrant.configure("2") do |config|
     node.vm.provider :libvirt do |libvirt|
       libvirt.cpus = 1
       libvirt.memory = 2048
-      libvirt.name = "node#{i}"
+      #libvirt.host = "node#{i}"
     end
 
     node.vm.provision "shell" do |s|
@@ -116,9 +119,9 @@ sysctl -p
 
 echo 'set host name resolution'
 cat >> /etc/hosts <<EOF
-172.17.8.101 node1
-172.17.8.102 node2
-172.17.8.103 node3
+192.168.122.101 node1
+192.168.122.102 node2
+192.168.122.103 node3
 EOF
 
         cat /etc/hosts
@@ -191,7 +194,7 @@ fi
 
 cat > /etc/sysconfig/flanneld <<EOF
 # Flanneld configuration options
-FLANNEL_ETCD_ENDPOINTS="http://172.17.8.101:2379"
+FLANNEL_ETCD_ENDPOINTS="http://192.168.122.101:2379"
 FLANNEL_ETCD_PREFIX="/kube-centos/network"
 FLANNEL_OPTIONS="-iface=eth1"
 EOF
@@ -286,7 +289,7 @@ EOF
           echo "the admin role token is:"
           kubectl -n kube-system describe secret `kubectl -n kube-system get secret|grep admin-token|cut -d " " -f1`|grep "token:"|tr -s " "|cut -d " " -f2
           echo "login to dashboard with the above token"
-          echo https://172.17.8.101:`kubectl -n kube-system get svc kubernetes-dashboard -o=jsonpath='{.spec.ports[0].port}'`
+          echo https://192.168.122.101:`kubectl -n kube-system get svc kubernetes-dashboard -o=jsonpath='{.spec.ports[0].port}'`
           echo "install traefik ingress controller"
           kubectl apply -f /vagrant/addon/traefik-ingress/
         fi
