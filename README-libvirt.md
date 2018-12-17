@@ -1,6 +1,19 @@
 README for libvirt
 ===========================
 
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [Disable DHCP for libvirt network](#disable-dhcp-for-libvirt-network)
+- [Update kubernetes certificate](#update-kubernetes-certificate)
+	- [genreate new certificate](#genreate-new-certificate)
+	- [copy certificate files from host to guest](#copy-certificate-files-from-host-to-guest)
+- [Deploy node again](#deploy-node-again)
+- [Usage](#usage)
+	- [Manage vm node](#manage-vm-node)
+	- [Use Kubernetes](#use-kubernetes)
+
+<!-- /TOC -->
+
 # Disable DHCP for libvirt network
 
 > to specify static ip in Vagrantfile
@@ -80,7 +93,9 @@ $ ./util_centos.sh destroy
 $ ./util_centos.sh run
 ```
 
-# Enter node
+# Usage
+
+## Manage vm node
 
 ```
 //vagrant status
@@ -97,6 +112,34 @@ $ ./util_centos.sh list
  2     kubernetes-vagrant-centos-cluster_node3 running
  3     kubernetes-vagrant-centos-cluster_node2 running
 
+//suspend
+$ for i in 1 2 3
+do
+./util_centos.sh suspend node$i
+done
+
+$ ./util_centos.sh status
+Current machine states:
+node1                     paused (libvirt)
+node2                     paused (libvirt)
+node3                     paused (libvirt)
+
+//resume
+$ for i in 1 2 3
+do
+./util_centos.sh resume node$i
+done
+
+$ ./util_centos.sh status
+Current machine states:
+node1                     running (libvirt)
+node2                     running (libvirt)
+node3                     running (libvirt)
+```
+
+## Use Kubernetes
+
+```
 $ ./util_centos.sh ssh node1
 Last login: Mon Dec 17 22:48:01 2018 from 192.168.121.1
 [vagrant@node1 ~]$ sudo kubectl get nodes
@@ -104,4 +147,29 @@ NAME      STATUS    ROLES     AGE       VERSION
 node1     Ready     <none>    29m       v1.11.0
 node2     Ready     <none>    29m       v1.11.0
 node3     Ready     <none>    29m       v1.11.0
+
+[vagrant@node1 ~]$ sudo -s
+[root@node1 vagrant]# kubectl get all --all-namespaces
+NAMESPACE     NAME                                        READY     STATUS             RESTARTS   AGE
+kube-system   pod/coredns-549f985987-lnrfg                1/1       Running            11         40m
+kube-system   pod/coredns-549f985987-ttt8z                1/1       Running            11         40m
+kube-system   pod/kubernetes-dashboard-574589d477-z4cxp   0/1       CrashLoopBackOff   12         40m
+kube-system   pod/traefik-ingress-controller-7htql        1/1       Running            0          40m
+
+NAMESPACE     NAME                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)           AGE
+default       service/kubernetes                ClusterIP   10.254.0.1       <none>        443/TCP           40m
+kube-system   service/kube-dns                  ClusterIP   10.254.0.2       <none>        53/UDP,53/TCP     40m
+kube-system   service/kubernetes-dashboard      ClusterIP   10.254.140.84    <none>        8443/TCP          40m
+kube-system   service/traefik-ingress-service   ClusterIP   10.254.205.193   <none>        80/TCP,8080/TCP   40m
+
+NAMESPACE     NAME                                        DESIRED   CURRENT   READY     UP-TO-DATE   AVAILABLE   NODE SELECTOR                  AGE
+kube-system   daemonset.apps/traefik-ingress-controller   1         1         1         1            1           kubernetes.io/hostname=node2   40m
+
+NAMESPACE     NAME                                   DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+kube-system   deployment.apps/coredns                2         2         2            2           40m
+kube-system   deployment.apps/kubernetes-dashboard   1         1         1            0           40m
+
+NAMESPACE     NAME                                              DESIRED   CURRENT   READY     AGE
+kube-system   replicaset.apps/coredns-549f985987                2         2         2         40m
+kube-system   replicaset.apps/kubernetes-dashboard-574589d477   1         1         0         40m
 ```

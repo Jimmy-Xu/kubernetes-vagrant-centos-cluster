@@ -428,6 +428,8 @@ function show_usage(){
   usage: ./util_centos.sh <command>
   <command>:
     run              # 'vagrant up --provision --provider=${PROVIDER}'
+    suspend          # 'virsh suspend node<n>'
+    resume           # 'virsh resume node<n>'
     halt             # 'vagrant halt'
     destroy          # 'vagrant destroy'
     list             # show VM list via 'sudo vagrant list'
@@ -455,6 +457,18 @@ case "$1" in
     ;;
   halt)
     vagrant halt
+    ;;
+  suspend)
+    if [ "$2" == "" ]; then
+      quit "please specify node name, run './util_centos.sh status' to get node name list"
+    fi
+    sudo virsh suspend kubernetes-vagrant-centos-cluster_$2
+    ;;
+  resume)
+    if [ "$2" == "" ]; then
+      quit "please specify node name, run './util_centos.sh status' to get node name list"
+    fi
+    sudo virsh resume kubernetes-vagrant-centos-cluster_$2
     ;;
   destroy)
     destroy_all
