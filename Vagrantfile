@@ -24,9 +24,6 @@ Vagrant.configure("2") do |config|
   #  vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 1000 ]
   # end
 
-  config.vm.provider :libvirt do |libvirt|
-    libvirt.graphics_ip = '0.0.0.0'
-  end
 
   $num_instances = 3
 
@@ -69,27 +66,16 @@ Vagrant.configure("2") do |config|
     node.vm.box = "centos/7"
     node.vm.hostname = "node#{i}"
     ip = "192.168.122.#{i+100}"
-    #node.vm.network "private_network", bridge:"virbr0", ip: ip
-    #node.vm.network "public_network", bridge: "virbr0", auto_config: true
-
-    config.vm.network "private_network", :dev => "virbr0", :mode => 'bridge', :type => "bridge", :ip => ip
-    config.vm.network "public_network", :dev => "virbr1", :mode => 'bridge', :type => "bridge"
+    node.vm.network :private_network, :ip => ip,
+                            :libvirt__host_ip => '192.168.122.1',
+                            :libvirt__netmask => '255.255.255.0',
+                            :libvirt__dhcp_enabled =>  false
     #node.vm.synced_folder "/Users/DuffQiu/share", "/home/vagrant/share"
 
-  #   node.vm.provider "virtualbox" do |vb|
-  # #   # Display the VirtualBox GUI when booting the machine
-  # #   vb.gui = true
-  # #
-  # #   # Customize the amount of memory on the VM:
-  #     vb.memory = "3072"
-  #     vb.cpus = 1
-  #     vb.name = "node#{i}"
-  #   end
-
     node.vm.provider :libvirt do |libvirt|
+      libvirt.graphics_ip = '0.0.0.0'
       libvirt.cpus = 1
       libvirt.memory = 2048
-      #libvirt.host = "node#{i}"
     end
 
     node.vm.provision "shell" do |s|
