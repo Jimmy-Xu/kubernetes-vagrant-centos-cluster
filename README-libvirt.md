@@ -11,6 +11,8 @@ README for libvirt
 - [Usage](#usage)
 	- [Manage vm node](#manage-vm-node)
 	- [Use Kubernetes](#use-kubernetes)
+	- [Use dashboard](#use-dashboard)
+- [re-install dashboard](#re-install-dashboard)
 
 <!-- /TOC -->
 
@@ -172,4 +174,34 @@ kube-system   deployment.apps/kubernetes-dashboard   1         1         1      
 NAMESPACE     NAME                                              DESIRED   CURRENT   READY     AGE
 kube-system   replicaset.apps/coredns-549f985987                2         2         2         40m
 kube-system   replicaset.apps/kubernetes-dashboard-574589d477   1         1         0         40m
+```
+
+##  Use dashboard
+
+```
+//create cert for dashboard
+$ vagrant ssh node1
+$ sudo -i
+$ cd /vagrant/addon/dashboard/
+$ mkdir certs
+$ openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashboard.csr -subj "/C=/ST=/L=/O=/OU=/CN=kubernetes-dashboard"
+$ openssl x509 -req -sha256 -days 365 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
+$ kubectl delete secret kubernetes-dashboard-certs -n kube-system
+$ kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kube-system
+
+#re-install dashboard
+$ kubectl delete pods $(kubectl get pods -n kube-system|grep kubernetes-dashboard|awk '{print $1}') -n kube-system
+
+//get token
+$ kubectl describe secret/$(kubectl get secret -nkube-system |grep admin|awk '{print $1}') -nkube-system
+or
+$ kubectl -n kube-system get secret $(kubectl get secret -nkube-system |grep admin|awk '{print $1}') -o jsonpath={.data.token}|base64 -d
+
+//get ip of dashboard
+$ kubectl get services -n kube-system kubernetes-dashboard
+NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+kubernetes-dashboard   ClusterIP   10.254.160.11   <none>        8443/TCP   9h
+
+//open dashboard in web browser, paste the token
+https://10.254.160.11:8443
 ```
