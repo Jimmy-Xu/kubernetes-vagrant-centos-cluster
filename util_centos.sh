@@ -39,8 +39,9 @@ WORK_DIR=$(cd `dirname $0`; pwd)
 TMP_DIR="../_tmp"
 IMAGE_CACHE="../_image"
 
-VAGRANT_PKG="vagrant_2.2.2_x86_64.rpm"
-VAGRANT_URL="https://releases.hashicorp.com/vagrant/2.2.2/${VAGRANT_PKG}"
+VAGRANT_VER="2.2.2"
+VAGRANT_PKG="vagrant_${VAGRANT_VER}_x86_64.rpm"
+VAGRANT_URL="https://releases.hashicorp.com/vagrant/${VAGRANT_VER}/${VAGRANT_PKG}"
 VIRTUALBOX_PKG="VirtualBox-5.2-5.2.22_126460_el7-1.x86_64.rpm "
 VIRTUALBOX_URL="http://download.virtualbox.org/virtualbox/5.2.22/${VIRTUALBOX_PKG}"
 
@@ -121,6 +122,14 @@ function ensure_dependency(){
   echo "[for common] ensure vagrant installed"
   which vagrant >/dev/null 2>&1
   if [ $? -ne 0 ];then
+    NEED_INSTALL="true"
+  else
+    GET_VAGRANT_VER=$(vagrant --version | awk '{print $NF}')
+    if [ "${GET_VAGRANT_VER}" != "${VAGRANT_VER}" ]; then
+      NEED_INSTALL="true"
+    fi
+  fi
+  if [ "${NEED_INSTALL}" == "true" ];then
     wget -c ${VAGRANT_URL} -O ${WORK_DIR}/${TMP_DIR}/${VAGRANT_PKG}
     sudo rpm -Uvh ${WORK_DIR}/${TMP_DIR}/${VAGRANT_PKG}
     which vagrant >/dev/null 2>&1
