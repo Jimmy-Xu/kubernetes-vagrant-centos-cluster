@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+
+KUBERNETES_VER="1.13.0"
+kubernetes_release="/vagrant/kubernetes-server-linux-amd64-${KUBERNETES_VER}.tar.gz"
+if [[ ! -f "$kubernetes_release" ]]; then
+  echo "$kubernetes_release not exist"
+  exit 1
+fi
+
+
 # change time zone
 cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 timedatectl set-timezone Asia/Shanghai
@@ -8,11 +17,20 @@ mv /etc/yum.repos.d/CentOS7-Base-163.repo /etc/yum.repos.d/CentOS-Base.repo
 # using socat to port forward in helm tiller
 # install  kmod and ceph-common for rook
 yum install -y wget curl conntrack-tools vim net-tools telnet tcpdump bind-utils socat ntp kmod ceph-common dos2unix
-kubernetes_release="/vagrant/kubernetes-server-linux-amd64.tar.gz"
-# Download Kubernetes
-if [[ $(hostname) == "node1" ]] && [[ ! -f "$kubernetes_release" ]]; then
-    wget https://storage.googleapis.com/kubernetes-release/release/v1.11.0/kubernetes-server-linux-amd64.tar.gz -P /vagrant/
+
+
+if [[ $1 -eq 1 ]]
+then
+  echo "install GNOME for node1"
+  yum groupinstall -y "X Window System"
+  yum groupinstall -y "GNOME Desktop"
+  systemctl set-default graphical.target
+
+  echo "install on-my-zsh for node1"
+  yum install -y git zsh
+  curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh | bash
 fi
+
 
 # enable ntp to sync time
 echo 'sync time'
@@ -132,7 +150,7 @@ cp /vagrant/conf/bootstrap.kubeconfig /etc/kubernetes/
 cp /vagrant/conf/kube-proxy.kubeconfig /etc/kubernetes/
 cp /vagrant/conf/kubelet.kubeconfig /etc/kubernetes/
 
-tar -xzvf /vagrant/kubernetes-server-linux-amd64.tar.gz -C /vagrant
+tar -xzvf $kubernetes_release -C /vagrant
 cp /vagrant/kubernetes/server/bin/* /usr/bin
 
 dos2unix -q /vagrant/systemd/*.service

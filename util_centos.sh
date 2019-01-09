@@ -374,7 +374,19 @@ function prepare_image(){
   echo "-----------------------------"
   vagrant box list
   echo "============================="
+}
 
+function prepare_kubernetes_server() {
+  KUBERNETES_VER="1.13.0"
+  kubernetes_release="kubernetes-server-linux-amd64-${KUBERNETES_VER}.tar.gz"
+  # Download Kubernetes
+  if [[ ! -f "$kubernetes_release" ]]; then
+      export http_proxy=http://192.168.122.1:8118
+      export https_proxy=http://192.168.122.1:8118
+      wget -c https://dl.k8s.io/v$KUBERNETES_VER/kubernetes-server-linux-amd64.tar.gz -O kubernetes-server-linux-amd64-${KUBERNETES_VER}.tar.gz
+      unset http_proxy
+      unset https_proxy
+  fi
 }
 
 function vagrant_up(){
@@ -456,6 +468,7 @@ case "$1" in
     # ensure_config_file
     ensure_dependency
     prepare_image
+    prepare_kubernetes_server
     vagrant_up
     ;;
   list)

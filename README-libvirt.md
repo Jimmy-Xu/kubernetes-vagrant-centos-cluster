@@ -145,35 +145,35 @@ node3                     running (libvirt)
 $ ./util_centos.sh ssh node1
 Last login: Mon Dec 17 22:48:01 2018 from 192.168.121.1
 [vagrant@node1 ~]$ sudo kubectl get nodes
-NAME      STATUS    ROLES     AGE       VERSION
-node1     Ready     <none>    29m       v1.11.0
-node2     Ready     <none>    29m       v1.11.0
-node3     Ready     <none>    29m       v1.11.0
+NAME    STATUS   ROLES    AGE   VERSION
+node1   Ready    <none>   68m   v1.13.0
+node2   Ready    <none>   68m   v1.13.0
+node3   Ready    <none>   68m   v1.13.0
 
 [vagrant@node1 ~]$ sudo -s
 [root@node1 vagrant]# kubectl get all --all-namespaces
-NAMESPACE     NAME                                        READY     STATUS             RESTARTS   AGE
-kube-system   pod/coredns-549f985987-lnrfg                1/1       Running            11         40m
-kube-system   pod/coredns-549f985987-ttt8z                1/1       Running            11         40m
-kube-system   pod/kubernetes-dashboard-574589d477-z4cxp   0/1       CrashLoopBackOff   12         40m
-kube-system   pod/traefik-ingress-controller-7htql        1/1       Running            0          40m
+NAMESPACE     NAME                                        READY   STATUS    RESTARTS   AGE
+kube-system   pod/coredns-f5cf6c6fd-8cznm                 1/1     Running   0          6m42s
+kube-system   pod/coredns-f5cf6c6fd-fr7pk                 1/1     Running   0          6m42s
+kube-system   pod/kubernetes-dashboard-6cbfcb69b8-tkkkq   1/1     Running   0          6m40s
+kube-system   pod/traefik-ingress-controller-hfp9s        1/1     Running   0          6m38s
 
 NAMESPACE     NAME                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)           AGE
-default       service/kubernetes                ClusterIP   10.254.0.1       <none>        443/TCP           40m
-kube-system   service/kube-dns                  ClusterIP   10.254.0.2       <none>        53/UDP,53/TCP     40m
-kube-system   service/kubernetes-dashboard      ClusterIP   10.254.140.84    <none>        8443/TCP          40m
-kube-system   service/traefik-ingress-service   ClusterIP   10.254.205.193   <none>        80/TCP,8080/TCP   40m
+default       service/kubernetes                ClusterIP   10.254.0.1       <none>        443/TCP           66m
+kube-system   service/kube-dns                  ClusterIP   10.254.0.2       <none>        53/UDP,53/TCP     6m42s
+kube-system   service/kubernetes-dashboard      ClusterIP   10.254.255.130   <none>        8443/TCP          6m40s
+kube-system   service/traefik-ingress-service   ClusterIP   10.254.172.149   <none>        80/TCP,8080/TCP   6m38s
 
-NAMESPACE     NAME                                        DESIRED   CURRENT   READY     UP-TO-DATE   AVAILABLE   NODE SELECTOR                  AGE
-kube-system   daemonset.apps/traefik-ingress-controller   1         1         1         1            1           kubernetes.io/hostname=node2   40m
+NAMESPACE     NAME                                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR                  AGE
+kube-system   daemonset.apps/traefik-ingress-controller   1         1         1       1            1           kubernetes.io/hostname=node2   6m38s
 
-NAMESPACE     NAME                                   DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
-kube-system   deployment.apps/coredns                2         2         2            2           40m
-kube-system   deployment.apps/kubernetes-dashboard   1         1         1            0           40m
+NAMESPACE     NAME                                   READY   UP-TO-DATE   AVAILABLE   AGE
+kube-system   deployment.apps/coredns                2/2     2            2           6m42s
+kube-system   deployment.apps/kubernetes-dashboard   1/1     1            1           6m40s
 
-NAMESPACE     NAME                                              DESIRED   CURRENT   READY     AGE
-kube-system   replicaset.apps/coredns-549f985987                2         2         2         40m
-kube-system   replicaset.apps/kubernetes-dashboard-574589d477   1         1         0         40m
+NAMESPACE     NAME                                              DESIRED   CURRENT   READY   AGE
+kube-system   replicaset.apps/coredns-f5cf6c6fd                 2         2         2       6m42s
+kube-system   replicaset.apps/kubernetes-dashboard-6cbfcb69b8   1         1         1       6m40s
 ```
 
 ##  Use dashboard
@@ -204,4 +204,13 @@ kubernetes-dashboard   ClusterIP   10.254.160.11   <none>        8443/TCP   9h
 
 //open dashboard in web browser, paste the token
 https://10.254.160.11:8443
+```
+
+# FAQ
+
+## upgrae kubernetes
+
+```
+$ rm -rf kubernetes-server-linux-amd64.tar.gz
+$ ./util_centos.sh run
 ```
