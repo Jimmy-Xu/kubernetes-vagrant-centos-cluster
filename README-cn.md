@@ -6,6 +6,10 @@
 
 **注意**：kube-proxy使用ipvs模式。
 
+## Demo
+
+[![观看视频](https://ws4.sinaimg.cn/large/006tNbRwly1fyq0a5nx1pj30zk0k0whm.jpg)](https://www.bilibili.com/video/av39514214/)
+
 ## 准备环境
 
 需要准备以下软件和环境：
@@ -13,7 +17,7 @@
 - 8G以上内存
 - Vagrant 2.0+
 - VirtualBox 5.0 +
-- 提前下载Kubernetes 1.9以上版本（支持最新的1.11.0）的release压缩包
+- 提前下载Kubernetes 1.9以上版本（支持最新的1.13.0）的release压缩包
 - Mac/Linux，**Windows不完全支持，仅在windows10下通过**
 
 ## 集群
@@ -59,10 +63,11 @@ Kubernetes service IP范围：10.254.0.0/16
 ```bash
 git clone https://github.com/rootsongjc/kubernetes-vagrant-centos-cluster.git
 cd kubernetes-vagrant-centos-cluster
-wget https://storage.googleapis.com/kubernetes-release/release/v1.11.0/kubernetes-server-linux-amd64.tar.gz
 ```
 
-注：您可以在[这里](https://kubernetes.io/docs/imported/release/notes/)找到Kubernetes的发行版下载地址。
+**注意**：如果您是第一次运行该部署程序，那么可以直接执行下面的命令，它将自动帮你下载 Kubernetes 安装包，下一次你就不需要自己下载了，另外您也可以在[这里](https://kubernetes.io/docs/imported/release/notes/)找到Kubernetes的发行版下载地址，下载 Kubernetes发行版后重命名为`kubernetes-server-linux-amd64.tar.gz`，并移动到该项目的根目录下。
+
+因为该项目是使用 NFS 的方式挂载到虚拟机的 `/vagrant` 目录中的，所以在安装 NFS 的时候需要您输入密码授权。
 
 使用vagrant启动集群。
 
@@ -104,7 +109,7 @@ Bringing machine 'node3' up with 'virtualbox' provider...
 ==> node1: being used to connect to the internet.
     node1: Which interface should the network bridge to?
     node1: Which interface should the network bridge to?
-    
+
 ```
 输入`1`之后按回车继续。（根据自己真实网卡选择，node2、node3同样需要）
 
@@ -292,6 +297,7 @@ kubectl apply -f addon/istio/istio-ingress.yaml
 kubectl label namespace default istio-injection=enabled
 kubectl apply -n default -f yaml/istio-bookinfo/bookinfo.yaml
 kubectl apply -n default -f yaml/istio-bookinfo/bookinfo-gateway.yaml
+kubectl apply -n default -f yaml/istio-bookinfo/destination-rule-all.yaml
 ```
 
 在您自己的本地主机的`/etc/hosts`文件中增加如下配置项。
@@ -300,6 +306,7 @@ kubectl apply -n default -f yaml/istio-bookinfo/bookinfo-gateway.yaml
 192.168.122.102 grafana.istio.jimmysong.io
 192.168.122.102 prometheus.istio.jimmysong.io
 192.168.122.102 servicegraph.istio.jimmysong.io
+192.168.122.102 jaeger-query.istio.jimmysong.io
 ```
 
 我们可以通过下面的URL地址访问以上的服务。
@@ -308,10 +315,9 @@ kubectl apply -n default -f yaml/istio-bookinfo/bookinfo-gateway.yaml
 | ------------ | ------------------------------------------------------------ |
 | grafana      | http://grafana.istio.jimmysong.io                            |
 | servicegraph | <http://servicegraph.istio.jimmysong.io/dotviz>, <http://servicegraph.istio.jimmysong.io/graph>,<http://servicegraph.istio.jimmysong.io/force/forcegraph.html> |
-| tracing      | http://192.168.122.101:31888                                    |
+| tracing      | http://jaeger-query.istio.jimmysong.io                                    |
 | productpage  | http://192.168.122.101:31380/productpage                        |
-
-详细信息请参阅 https://istio.io/docs/guides/bookinfo.html
+详细信息请参阅：https://istio.io/zh/docs/examples/bookinfo/
 
 ![Bookinfo Demo](images/bookinfo-demo.gif)
 
@@ -356,7 +362,7 @@ Kiali web地址：http://192.168.122.101:31439
 
 ### Weave scope
 
-[Weave scope](https://github.com/weaveworks/scope)可用于监控、可视化和管理Docker&Kubernetes集群，详情见<https://www.weave.works/oss/scope/> 
+[Weave scope](https://github.com/weaveworks/scope)可用于监控、可视化和管理Docker&Kubernetes集群，详情见<https://www.weave.works/oss/scope/>
 
 在本地该项目的根路径下执行下面的命令：
 
@@ -457,4 +463,3 @@ rm -rf .vagrant
 <p align="center">
   <img src="https://ws1.sinaimg.cn/large/00704eQkgy1fshv989hhqj309k09k0t6.jpg" alt="ServiceMesher微信公众号二维码"/>
 </p>
-
